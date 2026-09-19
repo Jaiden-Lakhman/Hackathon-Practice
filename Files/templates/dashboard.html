@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <style>
+
+        body{
+            font-family:Arial,sans-serif;
+            background:#f4f6f9;
+            margin:0;
+        }
+
+        .header{
+            background:#0070d2;
+            color:white;
+            text-align:center;
+            padding:20px;
+        }
+
+        .container{
+            width:90%;
+            max-width:1000px;
+            margin:30px auto;
+        }
+
+        .card{
+            background:white;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:10px;
+        }
+
+        button{
+            background:#d9534f;
+            color:white;
+            border:none;
+            padding:10px 20px;
+            cursor:pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Nova Energy</h1>
+    <h3>Emergency Access Portal</h3>
+</div>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Welcome {{ customer_name }}</h2>
+
+        <p>You have successfully logged in.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <a href="/logout">
+            <button type="button">Logout</button>
+        </a>
+
+    </div>
+
+    <div class="card">
+        <h2>Current Address</h2>
+        {% if house %}
+            <p><strong>House number:</strong> {{ house["house_number"] or "Not provided" }}</p>
+            <p><strong>Postcode:</strong> {{ house["postcode"] }}</p>
+        {% else %}
+            <p>No address is linked to this account.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>View Bills & Payments</h2>
+        {% for bill in bills %}
+            <p>{{ bill["utility_type"]|title }}: £{{ "%.2f"|format(bill["amount_due"]) }} ({{ bill["payment_status"]|title }})</p>
+            <p>Latest reading: {{ bill["latest_reading"] }}</p>
+        {% else %}
+            <p>No bills found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2>Submit Meter Reading</h2>
+        <form action="/submit-reading" method="POST">
+            <label for="utility_type">Utility</label>
+            <select id="utility_type" name="utility_type" required>
+                <option value="gas">Gas</option>
+                <option value="electric">Electric</option>
+            </select>
+            <input type="number" step="0.1" name="reading" placeholder="Enter reading" required>
+            <button type="submit">Update Reading</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Moving Home</h2>
+        <form action="/update-address" method="POST">
+            <input type="text" name="postcode" placeholder="New postcode" value="{{ house['postcode'] if house else '' }}" required>
+            <input type="text" name="house_number" placeholder="House number" value="{{ house['house_number'] if house else '' }}" required>
+            <button type="submit">Update Address</button>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>
